@@ -1,0 +1,25 @@
+{
+  "name": "codelips/wing-aephttpsdk",
+  "description": "ctwing.cn AEP SDK",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "codelips",
+      "email": "m4a1player@126.com"
+    }
+  ],
+  "require": {
+    "rmccue/requests": "^1.7",
+    "ext-http": "*",
+    "ext-json": "*",
+    "ext-curl": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^8.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "WingAepSDK\\": "src/"
+    }
+  }
+}
