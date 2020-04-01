@@ -4,6 +4,10 @@ namespace WingAepSDK;
 
 use WingAepSDK\Core\AepSDKRequest;
 
+/**
+ * Class AepSDK
+ * @package WingAepSDK
+ */
 class AepSDK
 {
     private $request = null;
@@ -19,6 +23,7 @@ class AepSDK
         if (class_exists($class)) {
             return new $class($this->request);
         }
+        return null;
     }
 
 }
