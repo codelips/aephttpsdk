@@ -21,13 +21,14 @@ class AepSDKRequest
         $this->appSecret = $appSecret;
     }
 
-    private function getTimestamp()
+    private function getMilliTimestamp()
     {
         return (int)(microtime(true) * 1000);
     }
 
-    private function getParams($query)
+    private function getQueryParams($url): array
     {
+        $query = parse_url($url, PHP_URL_QUERY);
         if (empty($query))
             return [];
         $args = explode('&', $query);
@@ -39,49 +40,51 @@ class AepSDKRequest
         return $rt;
     }
 
-    public function post(string $uri, array $postData = [])
+    public function post(string $uri, array $postData = [], $header = [])
     {
-        $url       = $this->baseHttpsUrl . $uri;
-        $getParams = $this->getParams(parse_url($url, PHP_URL_QUERY));
-        $body      = json_encode($postData);
-        $header    = $this->getHeader($getParams, $body);
+        $url         = $this->baseHttpsUrl . $uri;
+        $queryParams = $this->getQueryParams($url);
+        $body        = json_encode($postData);
+        $header      = array_merge($header, $this->getHeader($queryParams, $body));
         return \Requests::post($url, $header, $body);
     }
 
-    public function get(string $uri)
+    public function get(string $uri, $header = [])
     {
-        $url       = $this->baseHttpsUrl . $uri;
-        $getParams = $this->getParams(parse_url($url, PHP_URL_QUERY));
-        $header    = $this->getHeader($getParams);
+        $url         = $this->baseHttpsUrl . $uri;
+        $queryParams = $this->getQueryParams($url);
+        $header      = array_merge($header, $this->getHeader($queryParams));
         return \Requests::get($url, $header);
     }
 
-    private function getHeader(array $params, string $body = '')
+
+    protected function getHeader(array $queryParams, string $body = '')
     {
-        $timestamp = $this->getTimestamp();
-        $signature = $this->signature($timestamp, $params, $body);
+        $timestamp = $this->getMilliTimestamp();
+        $signature = $this->signature($this->appKey, $this->appSecret, $timestamp, $queryParams, $body);
         return [
             'application' => $this->appKey,
             'timestamp'   => $timestamp,
             'signature'   => $signature,
-            'Date'        => $timestamp,
-            'sdk'         => 'GIT: a4fb7fca',
-            'version'     => '20181031202028',
-            'User-Agent'  => 'Telecom API Gateway Java SDK',
+            'sdk'         => 0,
+            //            'version'     => '20181031202028',
+            'version'     => '20190712225145',
             'Connection'  => 'close',
+            //            'Date'        => $timestamp,
+            //            'User-Agent'  => 'Telecom API Gateway Java SDK',
         ];
     }
 
-    private function signature($timestamp, array $params, string $body = '')
+    protected function signature($appKey, $secret, $timestamp, array $queryParams, string $body = '')
     {
-        $code = 'application:' . $this->appKey . "\n" . 'timestamp:' . $timestamp . "\n";
-        foreach ($params as $key => $val) {//get params
+        $code = 'application:' . $appKey . "\n" . 'timestamp:' . $timestamp . "\n";
+        foreach ($queryParams as $key => $val) {//get params
             $code .= $key . ':' . $val . "\n";
         }
         if (!empty($body)) {//json body
             $code .= $body . "\n";
         }
-        return base64_encode(hash_hmac('sha1', $code, $this->appSecret, true));
+        return base64_encode(hash_hmac('sha1', $code, $secret, true));
     }
 
 
