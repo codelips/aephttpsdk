@@ -9,6 +9,17 @@ class AepSDKRequest
     private $appSecret    = null;
     private $baseHttpUrl  = 'http://ag-api.ctwing.cn';
     private $baseHttpsUrl = 'https://ag-api.ctwing.cn';
+    private $version = '';
+
+    /**
+     * @param string $version
+     * @return AepSDKRequest
+     */
+    public function setVersion(string $version): AepSDKRequest
+    {
+        $this->version = $version;
+        return $this;
+    }
 
     /**
      * AepSdkRequest constructor.
@@ -68,7 +79,7 @@ class AepSDKRequest
             'signature'   => $signature,
             'sdk'         => 0,
             //            'version'     => '20181031202028',
-            'version'     => '20190712225145',
+            'version'     => $this->version,
             'Connection'  => 'close',
             //            'Date'        => $timestamp,
             //            'User-Agent'  => 'Telecom API Gateway Java SDK',
