@@ -9,16 +9,25 @@ class AepSDKRequest
     private $appSecret    = null;
     private $baseHttpUrl  = 'http://ag-api.ctwing.cn';
     private $baseHttpsUrl = 'https://ag-api.ctwing.cn';
-    private $version = '';
+    private $version      = '';
+    private $masterKey    = null;
+    private $useMasterKey = false;
 
     /**
      * @param string $version
      * @return AepSDKRequest
      */
-    public function setVersion(string $version): AepSDKRequest
+    public function setVersion(string $version)
     {
         $this->version = $version;
-        return $this;
+    }
+
+    /**
+     * @param bool $useMasterKey
+     */
+    public function setUseMasterKey(bool $useMasterKey): void
+    {
+        $this->useMasterKey = $useMasterKey;
     }
 
     /**
@@ -26,10 +35,11 @@ class AepSDKRequest
      * @param null $appKey
      * @param null $appSecret
      */
-    public function __construct($appKey, $appSecret)
+    public function __construct($appKey, $appSecret, $masterKey = null)
     {
         $this->appKey    = $appKey;
         $this->appSecret = $appSecret;
+        $this->masterKey = $masterKey;
     }
 
     private function getMilliTimestamp()
@@ -37,35 +47,46 @@ class AepSDKRequest
         return (int)(microtime(true) * 1000);
     }
 
-    private function getQueryParams($url): array
+    private function parseUrl($url): array
     {
-        $query = parse_url($url, PHP_URL_QUERY);
-        if (empty($query))
-            return [];
-        $args = explode('&', $query);
-        $rt   = [];
-        foreach ($args as $val) {
-            $kv         = explode('=', $val);
-            $rt[$kv[0]] = $kv[1];
+        $query = parse_url($url);
+        $rt    = [];
+        if (isset($query['query'])) {
+            $args = explode('&', $query['query']);
+            foreach ($args as $val) {
+                $kv         = explode('=', $val);
+                $rt[$kv[0]] = $kv[1];
+            }
         }
-        return $rt;
+        $query['path']   = $query['path'] ?? '';
+        $query['scheme'] = $query['scheme'] ?? 'http';
+        if ($this->useMasterKey && $this->masterKey === null) {
+            throw  new \Exception('NEED: MasterKey');
+        }
+        if($this->useMasterKey){
+            $rt['MasterKey'] = $this->masterKey;
+        }
+        $query['args'] = $rt;
+        $args          = http_build_query($query['args']);
+        $query['url']  = $query['scheme'] . '://' . $query['host'] . $query['path'] . '?' . $args;
+        return $query;
     }
 
     public function post(string $uri, array $postData = [], $header = [])
     {
-        $url         = $this->baseHttpsUrl . $uri;
-        $queryParams = $this->getQueryParams($url);
-        $body        = json_encode($postData);
-        $header      = array_merge($header, $this->getHeader($queryParams, $body));
-        return \Requests::post($url, $header, $body);
+        $rawUrl = $this->baseHttpsUrl . $uri;
+        $query  = $this->parseUrl($rawUrl);
+        $body   = json_encode($postData);
+        $header = array_merge($header, $this->getHeader($query['args'], $body));
+        return \Requests::post($query['url'], $header, $body);
     }
 
     public function get(string $uri, $header = [])
     {
-        $url         = $this->baseHttpsUrl . $uri;
-        $queryParams = $this->getQueryParams($url);
-        $header      = array_merge($header, $this->getHeader($queryParams));
-        return \Requests::get($url, $header);
+        $url    = $this->baseHttpsUrl . $uri;
+        $query  = $this->parseUrl($url);
+        $header = array_merge($header, $this->getHeader($query['args']));
+        return \Requests::get($query['url'], $header);
     }
 
 
@@ -73,17 +94,17 @@ class AepSDKRequest
     {
         $timestamp = $this->getMilliTimestamp();
         $signature = $this->signature($this->appKey, $this->appSecret, $timestamp, $queryParams, $body);
-        return [
-            'application' => $this->appKey,
-            'timestamp'   => $timestamp,
-            'signature'   => $signature,
-            'sdk'         => 0,
-            //            'version'     => '20181031202028',
-            'version'     => $this->version,
-            'Connection'  => 'close',
-            //            'Date'        => $timestamp,
-            //            'User-Agent'  => 'Telecom API Gateway Java SDK',
-        ];
+        $header1   = [];
+        if ($this->masterKey !== null) {
+            $header1['MasterKey'] = $this->masterKey;
+        }
+        $header1['application'] = $this->appKey;
+        $header1['timestamp']   = $timestamp;
+        $header1['signature']   = $signature;
+        $header1['sdk']         = 0;
+        $header1['version']     = $this->version;
+        $header1['Connection']  = 'close';
+        return $header1;
     }
 
     protected function signature($appKey, $secret, $timestamp, array $queryParams, string $body = '')
