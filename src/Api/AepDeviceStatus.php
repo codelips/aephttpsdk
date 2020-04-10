@@ -4,36 +4,20 @@ namespace WingAepSDK\Api;
 
 use WingAepSDK\Core\AepSDKRequest;
 
-class AepDeviceStatus extends AepBaseApi
+class AepDeviceStatus
 {
+    use AepBaseApi;
 
-
-    public function getDeviceStatus($deviceId, $productId)
+    public function getDeviceStatus($data)
     {
-        $data = [
-            "productId" => $productId,
-            'deviceId'  => $deviceId,
-            'datasetId' => 'APPdata'
-        ];
-        $this->request->setVersion('20181031202028');
-        return $this->request->post('/aep_device_status/deviceStatus', $data);
+        $this->getRequest()->setVersion('20181031202028');
+        return $this->getRequest()->post('/aep_device_status/deviceStatus', $data);
     }
 
-    public function getDeviceStatusList($deviceId, $productId)
+    public function getDeviceStatusList($data)
     {
-        $data = ['productId'=>$productId,'deviceId'=>$deviceId];
-//        $data=[];
-//        foreach ($queryData as $val) {
-////            $data['deviceId'][] = $val['deviceId'];
-//            $data[] = [
-//                'deviceId'  => $val['deviceId'],
-//                'productId' => $val['productId'],
-//                'datasetId' => 'APPdata',
-//            ];
-//        }
-//        var_export($data);die;
-        $this->request->setVersion('20181031202403');
-        return $this->request->post('/aep_device_status/deviceStatusList', $data);
+        $this->getRequest()->setVersion('20181031202403');
+        return $this->getRequest()->post('/aep_device_status/deviceStatusList', $data);
     }
 
 }

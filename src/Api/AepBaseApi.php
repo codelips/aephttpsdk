@@ -5,12 +5,20 @@ namespace WingAepSDK\Api;
 use WingAepSDK\Core\AepSDKRequest;
 
 
-abstract class AepBaseApi
+trait AepBaseApi
 {
     /**
      * @var AepSDKRequest
      */
     protected $request;
+
+    /**
+     * @return AepSDKRequest
+     */
+    public function getRequest(): AepSDKRequest
+    {
+        return $this->request;
+    }
 
     public function setRequest(AepSDKRequest $request)
     {
