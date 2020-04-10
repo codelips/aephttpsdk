@@ -20,9 +20,6 @@ class AepSDKProxy
      * @var AepSDKProxy|null
      */
     private static $instance = null;
-    /**
-     * @var AepBaseApi|null
-     */
     private        $proxy    = null;
 
     public function __construct($appKey, $appSecret, $masterKey = null)
