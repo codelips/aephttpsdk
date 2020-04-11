@@ -12,6 +12,7 @@ class AepSDKRequest
     private $version      = '';
     private $masterKey    = null;
     private $useMasterKey = false;
+    private $cache        = null;
 
     /**
      * @param string $version
@@ -63,12 +64,15 @@ class AepSDKRequest
         if ($this->useMasterKey && $this->masterKey === null) {
             throw  new \Exception('NEED: MasterKey');
         }
-        if($this->useMasterKey){
+        if ($this->useMasterKey) {
             $rt['MasterKey'] = $this->masterKey;
         }
         $query['args'] = $rt;
-        $args          = http_build_query($query['args']);
-        $query['url']  = $query['scheme'] . '://' . $query['host'] . $query['path'] . '?' . $args;
+        $query['url']  = $query['scheme'] . '://' . $query['host'] . $query['path'];
+        if (!empty($query['args'])) {
+            $args         = http_build_query($query['args']);
+            $query['url'] = $query['url'] . '?' . $args;
+        }
         return $query;
     }
 
@@ -78,6 +82,7 @@ class AepSDKRequest
         $query  = $this->parseUrl($rawUrl);
         $body   = json_encode($postData);
         $header = array_merge($header, $this->getHeader($query['args'], $body));
+        $this->setCache('post', $query['url'], $header, $body);
         return \Requests::post($query['url'], $header, $body);
     }
 
@@ -86,9 +91,27 @@ class AepSDKRequest
         $url    = $this->baseHttpsUrl . $uri;
         $query  = $this->parseUrl($url);
         $header = array_merge($header, $this->getHeader($query['args']));
+        $this->setCache('get', $query['url'], $header);
         return \Requests::get($query['url'], $header);
     }
 
+    private function setCache($type, $url, $header, $body = '')
+    {
+        $this->cache = [
+            'type'   => $type,
+            'url'    => $url,
+            'header' => $header,
+            'body'   => $body,
+        ];
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getCache()
+    {
+        return $this->cache;
+    }
 
     protected function getHeader(array $queryParams, string $body = '')
     {

@@ -25,4 +25,8 @@ class AepBaseApi
         $this->request = $request;
     }
 
+    public function getLastRequstInfo()
+    {
+        return $this->request->getCache();
+    }
 }
