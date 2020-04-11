@@ -78,7 +78,6 @@ class AepSDKRequest
         $query  = $this->parseUrl($rawUrl);
         $body   = json_encode($postData);
         $header = array_merge($header, $this->getHeader($query['args'], $body));
-        var_export($header);
         return \Requests::post($query['url'], $header, $body);
     }
 
