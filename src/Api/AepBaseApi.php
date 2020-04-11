@@ -5,7 +5,7 @@ namespace WingAepSDK\Api;
 use WingAepSDK\Core\AepSDKRequest;
 
 
-trait AepBaseApi
+class AepBaseApi
 {
     /**
      * @var AepSDKRequest

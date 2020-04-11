@@ -37,7 +37,7 @@ class AepSDKProxy
         return self::$instance;
     }
 
-    public function for($class)
+    public function for(AepBaseApi $class)
     {
         $this->proxy = $class;
         $this->proxy->setRequest(self::$request);

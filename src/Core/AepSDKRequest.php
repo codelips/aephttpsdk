@@ -78,6 +78,7 @@ class AepSDKRequest
         $query  = $this->parseUrl($rawUrl);
         $body   = json_encode($postData);
         $header = array_merge($header, $this->getHeader($query['args'], $body));
+        var_export($header);
         return \Requests::post($query['url'], $header, $body);
     }
 
@@ -95,15 +96,15 @@ class AepSDKRequest
         $timestamp = $this->getMilliTimestamp();
         $signature = $this->signature($this->appKey, $this->appSecret, $timestamp, $queryParams, $body);
         $header1   = [];
-        if ($this->masterKey !== null) {
+        if (isset($queryParams['MasterKey'])) {
             $header1['MasterKey'] = $this->masterKey;
         }
         $header1['application'] = $this->appKey;
         $header1['timestamp']   = $timestamp;
         $header1['signature']   = $signature;
-        $header1['sdk']         = 0;
         $header1['version']     = $this->version;
-        $header1['Connection']  = 'close';
+        $header1['sdk']         = 0;
+//        $header1['Connection']  = 'close';
         return $header1;
     }
 
