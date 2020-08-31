@@ -2,7 +2,6 @@
 
 namespace WingAepSDK;
 
-use someNamespaceA\NamespacedClass;
 use WingAepSDK\Api\AepBaseApi;
 use WingAepSDK\Core\AepSDKRequest;
 
@@ -24,17 +23,12 @@ class AepSDKProxy
 
     public function __construct($appKey, $appSecret, $masterKey = null)
     {
-        if (self::$request === null) {
-            self::$request = new AepSDKRequest($appKey, $appSecret, $masterKey);
-        }
+        self::$request = new AepSDKRequest($appKey, $appSecret, $masterKey);
     }
 
     public static function s($appKey = '', $appSecret = '', $masterKey = null)
     {
-        if (self::$instance === null) {
-            self::$instance = new static($appKey, $appSecret, $masterKey);
-        }
-        return self::$instance;
+        return self::$instance = new static($appKey, $appSecret, $masterKey);
     }
 
     public function for(AepBaseApi $class)
