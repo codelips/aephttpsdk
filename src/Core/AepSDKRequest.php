@@ -83,7 +83,7 @@ class AepSDKRequest
         $body   = json_encode($postData);
         $header = array_merge($header, $this->getHeader($query['args'], $body));
         $this->setCache('post', $query['url'], $header, $body);
-        return \Requests::post($query['url'], $header, $body);
+        return \Requests::post($query['url'], $header, $body,['blocking'=>false]);
     }
 
     public function get(string $uri, $header = [])
@@ -92,7 +92,7 @@ class AepSDKRequest
         $query  = $this->parseUrl($url);
         $header = array_merge($header, $this->getHeader($query['args']));
         $this->setCache('get', $query['url'], $header);
-        return \Requests::get($query['url'], $header);
+        return \Requests::get($query['url'], $header,['blocking'=>false]);
     }
 
     private function setCache($type, $url, $header, $body = '')
